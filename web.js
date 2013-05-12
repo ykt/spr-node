@@ -45,16 +45,15 @@ app.listen(port, function() {
 
 
 app.get('/', function(req, res) {
-  res.send({ "message": "POST to /voter with 'ic'."})
+  res.send({ "message": "GET to /voter/:ic."})
 });
 
 app.get('/voter', function(req, res, next) {
-  res.set('Allow', ['POST']);
-  res.send(405, { "message": "Method not allowed" });
+  res.send(405, { "message": "Missing the IC, /voters/:ic ." });
   res.end();
 });
 
-app.post('/voter/:id', function(req, res, next) {
+app.get('/voter/:id', function(req, res, next) {
 
     var data = querystring.stringify({
         txtIC: req.params.id,
