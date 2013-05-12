@@ -64,7 +64,7 @@ app.post('/spr', function(req, res, next) {
     }
 
     var data = querystring.stringify({
-        txtIC: reg.param,
+        txtIC: req.param,
         Semak: "Semak",
         __EVENTTARGET : "",
         __EVENTARGUMENT : "",
