@@ -45,25 +45,19 @@ app.listen(port, function() {
 
 
 app.get('/', function(req, res) {
-  res.send({ "message": "POST to /spr with 'ic'."})
+  res.send({ "message": "POST to /voter with 'ic'."})
 });
 
-app.get('/spr', function(req, res, next) {
+app.get('/voter', function(req, res, next) {
   res.set('Allow', ['POST']);
   res.send(405, { "message": "Method not allowed" });
   res.end();
 });
 
-app.post('/spr', function(req, res, next) {
-
-    if (!req.param('ic')) {
-        res.send(400, { "message": "Required parameter: 'ic' "});
-        res.end();
-        return;
-    }
+app.post('/voter/:id', function(req, res, next) {
 
     var data = querystring.stringify({
-        txtIC: req.param('ic'),
+        txtIC: req.params.id,
         Semak: "Semak",
         __EVENTTARGET : "",
         __EVENTARGUMENT : "",
