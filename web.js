@@ -14,7 +14,6 @@ var spr_url = 'daftarj.spr.gov.my';
 var spr_uri = '/DaftarjBM.aspx';
 
 var splitter = function splitter(raw_data){
-    console.log(raw_data);
     raw_data = raw_data.split("-");
     data = {
         value: raw_data[1],
@@ -64,7 +63,7 @@ app.post('/spr', function(req, res, next) {
     }
 
     var data = querystring.stringify({
-        txtIC: req.param,
+        txtIC: req.param('ic'),
         Semak: "Semak",
         __EVENTTARGET : "",
         __EVENTARGUMENT : "",
