@@ -15,30 +15,31 @@ var spr_uri = '/DaftarjBM.aspx';
 
 var splitter = function splitter(raw_data){
     raw_data = raw_data.split("-");
+    id = raw_data[0].split("/");
     data = {
-        value: raw_data[1],
-        id: raw_data[0].indexOf("/") === -1 ? raw_data[0] : raw_data[0].split("/")[0]
+        value: raw_data[1].trim(),
+        id: id.length < 1 ? id.trim()  : id[id.length -1 ].trim()
     }
     return data;
 }
 
 process.on('SIGINT', function() {
-  console.log("\nGracefully shutting down from SIGINT");
-  process.exit();
+    console.log("\nGracefully shutting down from SIGINT");
+    process.exit();
 });
 
 app.use(express.bodyParser());
 app.use(function(req, res, next){
-  console.log("%s %s %s %s", req.method, req.url, req.ip, req.get('user-agent'));
-  next();
+    console.log("%s %s %s %s", req.method, req.url, req.ip, req.get('user-agent'));
+    next();
 });
 app.use(function(err, req, res, next){
-  console.error(err.stack);
-  res.send(500, { error: 'Something blew up!' });
+    console.error(err.stack);
+    res.send(500, { error: 'Something blew up!' });
 });
 
 app.listen(port, function() {
-  console.log("Listening on " + port);
+    console.log("Listening on " + port);
 });
 
 
@@ -49,11 +50,12 @@ app.get('/', function(req, res) {
 });
 
 app.get('/voter', function(req, res, next) {
-  res.send(405, { "message": "Missing the IC, /voters/:ic ." });
-  res.end();
+    res.send(405, { "message": "Missing the IC, /voters/:ic ." });
+    res.end();
 });
 
-app.get('/voter/:id', function(req, res, next) {
+// /voter/:id/:format
+app.get('/voter/:id/:format', function(req, res, next) {
 
     var data = querystring.stringify({
         txtIC: req.params.id,
@@ -84,28 +86,38 @@ app.get('/voter/:id', function(req, res, next) {
         response.on('data', function (chunk) {
           str+= chunk;
         });
+
         response.on('error', function(e) {
           console.error(e.message);
           res.send(500, { error: 'Something blew up!' })
         });
+
         response.on('end', function(){
             $ = cheerio.load(str, {ignoreWhitespace: true});
 
             var result = {
                 name : $('table span#Labelnama').length < 0 ? 'undefined' : $('table span#Labelnama').text(),
-                ic : $('table span#Labelnama').length < 0 ? 'undefined' : $('table span#LabelIC').text(),
-                dob : $('table span#Labelnama').length < 0 ? 'undefined' : $('table span#LabelTlahir').text(),
-                location: $('table span#Labelnama').length < 0 ? 'undefined' : splitter($('table span#Labellokaliti').text()),
+                ic : $('table span#LabelIC').length < 0 ? 'undefined' : $('table span#LabelIC').text(),
+                dob : $('table span#LabelTlahir').length < 0 ? 'undefined' : $('table span#LabelTlahir').text(),
+                location: $('table span#Labellokaliti').length < 0 ? 'undefined' : splitter($('table span#Labellokaliti').text()),
                 vote_area: $('table span#Labelnama').length < 0 ? 'undefined' : splitter($('table span#Labeldm').text()),
-                dun: $('table span#Labelnama').length < 0 ? 'undefined' : splitter($('table span#Labeldun').text()),
-                parliment: $('table span#Labelnama').length < 0 ? 'undefined' : splitter($('table span#Labelpar').text()),
-                state: $('table span#Labelnama').length < 0 ? 'undefined' : $('table span#Labelnegeri').text()
+                dun: $('table span#Labeldun').Labeldm < 0 ? 'undefined' : splitter($('table span#Labeldun').text()),
+                parliment: $('table span#Labelpar').length < 0 ? 'undefined' : splitter($('table span#Labelpar').text()),
+                state: $('table span#Labelnegeri').length < 0 ? 'undefined' : $('table span#Labelnegeri').text()
             }
-            //console.log("Sucessfully send back the data with size " +);
+            
+            // TODO: Not sure this is correct way to detec the format. Check on res.format(function(){})
+            if(req.params.format == 'jsonp') {
+                res.jsonp(200, result);
+            }
+            
             res.send(result);
+
         })
     });
+
     http_client.write(data);
     http_client.end();
+
 });
 
